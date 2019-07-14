@@ -1,0 +1,51 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:tx="http://www.springframework.org/schema/tx" xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.2.xsd
+		http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.2.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.2.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.2.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.2.xsd">
+
+    <!-- 自动扫描Redis工具类所在包 -->
+    <context:component-scan base-package="com.redisdao" />
+
+    <!-- 配置JedisPoolConfig相关参数 -->
+    <bean id="poolConfig" class="redis.clients.jedis.JedisPoolConfig">
+        <!-- 连接池最大连接数（使用负值表示没有限制），根据实际情况修改 -->
+        <property name="maxTotal" value="8"></property>
+        <!-- 连接池中的最大空闲连接，根据实际情况修改 -->
+        <property name="maxIdle" value="8"></property>
+        <!-- 连接池中的最小空闲连接，根据实际情况修改 -->
+        <property name="minIdle" value="0"></property>
+        <!-- 连接池最大阻塞等待时间（使用负值表示没有限制），根据实际情况修改 -->
+        <property name="maxWaitMillis" value="-1"></property>
+    </bean>
+
+    <!-- 配置redis服务器信息,jedis依赖jar包 commons-pooljar jedis基于 commons-pool自己实现了一个资源池 -->
+    <bean id="connectionFactory"
+          class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory">
+        <property name="poolConfig" ref="poolConfig"></property>
+        <!--服务器地址-->
+        <property name="hostName" value="127.0.0.1"></property>
+        <property name="port" value="6379"></property>
+        <property name="password" value=""></property>
+        <!-- Redis默认有16个库，序号是0-15，默认是选中的是0号数据库 -->
+        <property name="database" value="0"></property>
+        <property name="timeout" value="2000"></property>
+
+    </bean>
+
+    <!-- 配置RedisTemplate -->
+    <bean id="redisTemplate" class="org.springframework.data.redis.core.RedisTemplate">
+        <property name="connectionFactory" ref="connectionFactory"></property>
+        <property name="keySerializer" ref="stringRedisSerializer" />
+        <property name="valueSerializer" ref="stringRedisSerializer" />
+        <property name="hashKeySerializer" ref="stringRedisSerializer" />
+        <property name="hashValueSerializer" ref="stringRedisSerializer" />
+    </bean>
+    <bean id="stringRedisSerializer"
+          class="org.springframework.data.redis.serializer.StringRedisSerializer" />
+
+</beans>
